@@ -8,8 +8,8 @@
 resource "google_storage_bucket" "website" {
   name          = var.bucket_name
   location      = var.region
-  force_destroy = true 
-  
+  force_destroy = true
+
   website {
     main_page_suffix = "index.html"
     not_found_page   = "404.html"
@@ -32,7 +32,7 @@ resource "google_compute_global_address" "static_ip" {
 
 # 4. Create a Cloud DNS managed zone for your domain
 resource "google_dns_managed_zone" "primary" {
-  name        = "primary-zone"
+  name = "primary-zone"
   # The DNS name must end with a trailing dot
   dns_name    = "${var.domain_name}."
   description = "Managed zone for ${var.domain_name}"
@@ -58,9 +58,9 @@ resource "google_compute_managed_ssl_certificate" "ssl_cert" {
     domains = [var.domain_name]
   }
 
-    # This depends_on block ensures that Cloud DNS record has been created before SSL certificate is generated.
+  # This depends_on block ensures that Cloud DNS record has been created before SSL certificate is generated.
   depends_on = [
-  google_dns_managed_zone.primary
+    google_dns_managed_zone.primary
   ]
 }
 
@@ -111,12 +111,13 @@ resource "google_storage_bucket_object" "static_files" {
     "gallery.js" = "application/javascript"
   }
 
-  name         = each.key
-  bucket       = google_storage_bucket.website.name
-  source       = "${path.module}/${each.key}"
-  content_type = each.value 
+  name          = each.key
+  bucket        = google_storage_bucket.website.name
+  source        = "${path.module}/${each.key}"
+  content_type  = each.value
+  cache_control = "public, max-age=300"
 
-# Tracking the file's hash.
+  # Tracking the file's hash.
   metadata = {
     content-md5 = filemd5("${path.module}/${each.key}")
   }
@@ -132,9 +133,10 @@ resource "google_storage_bucket_object" "photos" {
   # This loops through the list of photo files we found earlier
   for_each = local.photo_files
 
-  name   = "photos/${each.value}" # Uploads to the 'photos/' folder in the bucket
-  bucket = google_storage_bucket.website.name
-  source = "${path.module}/photos/${each.value}"
+  name          = "photos/${each.value}" # Uploads to the 'photos/' folder in the bucket
+  bucket        = google_storage_bucket.website.name
+  source        = "${path.module}/photos/${each.value}"
+  cache_control = "public, max-age=300"
 
   # Explicitly tracks each photo's hash.
   metadata = {
