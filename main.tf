@@ -24,6 +24,16 @@ resource "google_project_service" "dns_api" {
   disable_on_destroy = false
 }
 
+# 0. Enable the Google Cloud Domains API
+# Required for registering and managing domain names within GCP.
+resource "google_project_service" "cloud_domains_api" {
+  project = var.project_id
+  service = "domains.googleapis.com"
+
+  # Prevents Terraform from disabling the API when the resource is removed from the config.
+  disable_on_destroy = false
+}
+
 # 1. Create the GCS bucket to hold website content
 resource "google_storage_bucket" "website" {
   name          = var.bucket_name
