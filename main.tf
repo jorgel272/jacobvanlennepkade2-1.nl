@@ -4,6 +4,26 @@
 # Resources are created with Terraform and code is stored on Github.
 # Website code and required GCP resources are deployed by Github Action which runs on code change on commit to main branch.
 
+# 0. Enable the Google Compute Engine API
+# Required for creating resources like static IP addresses, forwarding rules, and proxies.
+resource "google_project_service" "compute_api" {
+  project = var.gcp_project_id
+  service = "compute.googleapis.com"
+
+  # Prevents Terraform from disabling the API when the resource is removed from the config.
+  disable_on_destroy = false
+}
+
+# 0. Enable the Google Cloud DNS API
+# Required for managing DNS zones and record sets for your domain.
+resource "google_project_service" "dns_api" {
+  project = var.gcp_project_id
+  service = "dns.googleapis.com"
+
+  # Prevents Terraform from disabling the API when the resource is removed from the config.
+  disable_on_destroy = false
+}
+
 # 1. Create the GCS bucket to hold website content
 resource "google_storage_bucket" "website" {
   name          = var.bucket_name
